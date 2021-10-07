@@ -21,23 +21,23 @@ contract Token {
         owner = msg.sender;
     }
 
-    function balanceOf(address account) external view returns(uint256) {
+    function balanceOf(address account) public view returns(uint256) {
         return balances[account];
     }
 
-    function totalSupply() external view returns(uint256) {
+    function totalSupply() public view returns(uint256) {
         return _totalSupply;
     } 
 
-    function transfer(address recipient, uint256 amount) external { //recipient-получатель
+    function transfer(address recipient, uint256 amount) public returns (bool success){ //recipient-получатель
         require(balances[msg.sender] >= amount, 'Error: Not enough AsuCoin');
         balances[msg.sender] -= amount;
         balances[recipient] += amount;
-
         emit Transfer(msg.sender, recipient, amount);
+        return true;
     }
 
-    function approve(address spender, uint256 amount) external returns(bool) {
+    function approve(address spender, uint256 amount) public returns(bool) {
         require(owner != address(0), "Error: Ownwer == address(0)");
         require(spender != address(0), "Error: Spender == address(0)");
         
@@ -46,11 +46,11 @@ contract Token {
         return true;
     }
 
-    function allowance(address owner, address spender) external view returns (uint256) {
+    function allowance(address owner, address spender) public view returns (uint256) {
         return allowed[owner][spender];
     }
 
-    function transferFrom(address sender, address spender, uint256 amount) external returns(bool) {
+    function transferFrom(address sender, address spender, uint256 amount) public returns(bool) {
         uint256 currentAllowance = allowed[sender][msg.sender]; 
         require(currentAllowance >= amount, "Transfer amount exceeds allowance");
         require(allowed[owner][spender] >= amount,'');
