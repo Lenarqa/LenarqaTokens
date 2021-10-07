@@ -24,7 +24,7 @@ describe('Token Contract', () => {
 
     describe('Transactions', () => {
 
-        it('Should transfer AsuCoin between accounts', async () => {
+        it('Should transfer LenarqaCoin between accounts', async () => {
             //addr1 test
             await token.transfer(addr1.address, 50);
             const addr1Balance = await token.balanceOf(addr1.address);
