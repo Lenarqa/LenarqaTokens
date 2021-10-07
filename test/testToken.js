@@ -10,8 +10,7 @@ describe('Token Contract', () => {
         [owner, addr1, addr2, _] = await ethers.getSigners();
     });
 
-    describe('Deployment', () => {
-        
+    describe('Deployment', () => { 
         it("Should set the right owher", async () => {
             expect(await token.owner()).to.equals(owner.address);
         });
@@ -59,12 +58,48 @@ describe('Token Contract', () => {
     })
     
     describe('Approve', () => {
-        it("approve test", async () => {
+        it("Approve", async () => {
             await token.approve(addr1.address, 100);
-            const  allowToAddr1Balance = token.allowance(token.owner, addr1.address);
-            console.log(allowToAddr1Balance);
-            expect(allowToAddr1Balance).to.equal(100);
+            expect(await token.allowance(owner.address, addr1.address)).to.equal(100);
         });
     });
 
+    describe('totalSupply', () => {
+        it("mint", async () => {
+            await token.mint(addr1.address, 100);
+            expect(await token.totalSupply()).to.equal(1000100);
+        });
+        
+        it("burn", async () => {
+            token.transfer(addr1.address, 100);
+            await token.burn(addr1.address, 100);
+            expect(await token.totalSupply()).to.equal(999900);
+        });
+    });
+
+    describe('totalSupply', () => {
+        it("mint", async () => {
+            await token.mint(addr1.address, 100);
+            expect(await token.totalSupply()).to.equal(1000100);
+        });
+        
+        it("burn", async () => {
+            token.transfer(addr1.address, 100);
+            await token.burn(addr1.address, 100);
+            expect(await token.totalSupply()).to.equal(999900);
+        });
+    });
+
+    describe('Increase/Decrease allowance', () => {
+        it("increase", async () => {
+            await token.increaseAllowance(addr1.address, 300);
+            expect(await token.allowance(owner.address, addr1.address)).to.equal(300);
+        });
+        
+        it("decrease", async () => {
+            token.approve(addr1.address, 400)
+            token.decreaseAllowance(addr1.address, 100);
+            expect(await token.allowance(owner.address, addr1.address)).to.equal(300);
+        });
+    });
 });

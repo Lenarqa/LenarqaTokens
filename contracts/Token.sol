@@ -66,6 +66,7 @@ contract Token {
     }
 
     function burn(address account, uint256 amount) external {
+        require(balances[account]>=amount, "Error, we can,t burn more that you have in your balance");
         balances[account]-= amount;
         _totalSupply-=amount;
     }
