@@ -3,65 +3,82 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
 contract Token {
-    string private name = "AsuCoin";
-    string public symvbol = "AC";
-    uint private _totalSupply = 1000000;
+    string public name = "LenarqaCoin";
+    string public symbol = "LC";
+    uint256 private _totalSupply = 1000000;
+    uint8 public decimals = 18;
+
     address public owner;
-    mapping(address => uint) balances;
-    mapping(address => mapping(address => uint256)) public _allowances;
+
+    mapping(address => uint256) balances;
+    mapping(address => mapping(address => uint256)) allowed;
+
+    event Approval(address owner, address spender,uint256 amount);
+    event Transfer(address owner, address spender,uint256 amount);
 
     constructor() {
         balances[msg.sender] = _totalSupply;
-        owner = msg.sender;//тот кто подключен к контракту.
+        owner = msg.sender;
     }
 
-    // утвердить
-    function approve(address spender, uint amount) external returns(bool) {
-        // console.log(spender);
-        // console.log(amount);
-        require(owner != address(0), "Ownwer == address(0)");
-        require(spender != address(0), "Spender == address(0)");
-        _allowances[msg.sender][spender] = amount;//дает спивающему адресу доступ к amount токенов отдающего адреса
-        
-        // console.log(_allowances[msg.sender][spender]);
-        //emit Approval(owner, spender, amount);//Вызывает евент из какой то библиотеки. Не обязателен в ERC20?
-        return true;
-    }
-
-    function allowance(address owner, address spender) public view returns (uint) {
-        return _allowances[owner][spender];
-    }
-
-    function transfer(address to, uint amount) external {
-        // console.log("Sender balance is %s tokens", balances[msg.sender]);
-        // console.log("Trying to send %s AsuCoins to %s", amount, to);
-        require(balances[msg.sender] >= amount, 'Not enough AsuCoun');
-        balances[msg.sender] -= amount;
-        balances[to] += amount;
-    }
-
-    function balanceOf(address account) external view returns(uint) {
+    function balanceOf(address account) external view returns(uint256) {
         return balances[account];
     }
 
-    function totalSupply() external view returns(uint) {
+    function totalSupply() external view returns(uint256) {
         return _totalSupply;
     } 
 
-    function transferFrom(address sender, address recipient, uint256 amount) external returns(bool) {
-        uint currentAllowance = _allowances[sender][msg.sender]; 
-        require(currentAllowance >= amount, "Transfer amount exceeds allowance");
-        unchecked { // эта функция зашищает от переполнения блока и отцицательных значений
-            this._approve(sender, msg.sender, amount);
-        }
+    function transfer(address recipient, uint256 amount) external { //recipient-получатель
+        require(balances[msg.sender] >= amount, 'Error: Not enough AsuCoin');
+        balances[msg.sender] -= amount;
+        balances[recipient] += amount;
+
+        emit Transfer(msg.sender, recipient, amount);
+    }
+
+    function approve(address spender, uint256 amount) external returns(bool) {
+        require(owner != address(0), "Error: Ownwer == address(0)");
+        require(spender != address(0), "Error: Spender == address(0)");
+        
+        allowed[msg.sender][spender] = amount;
+        emit Approval(owner, spender, amount);
         return true;
-    } 
+    }
 
-    function _approve(address owner, address spender, uint256 amount) external {
-        require(owner != address(0), "ERC20: approve from the zero address");
+    function allowance(address owner, address spender) external view returns (uint256) {
+        return allowed[owner][spender];
+    }
+
+    function transferFrom(address sender, address spender, uint256 amount) external returns(bool) {
+        uint256 currentAllowance = allowed[sender][msg.sender]; 
+        require(currentAllowance >= amount, "Transfer amount exceeds allowance");
+        require(allowed[owner][spender] >= amount,'');
+        allowed[owner][spender]-= amount;
+        balances[msg.sender]-= amount;
+        balances[spender]+= amount;
+        return true;
+    }
+    
+    function mint(address account, uint256 amount) external {
+        balances[account]+= amount;
+        _totalSupply+=amount;
+    }
+
+    function burn(address account, uint256 amount) external {
+        balances[account]-= amount;
+        _totalSupply-=amount;
+    }
+
+    function increaseAllowance(address spender, uint256 addAmount) external returns (bool) {
         require(spender != address(0), "ERC20: approve to the zero address");
+        allowed[msg.sender][spender] += addAmount;
+        return true;
+    }
 
-        _allowances[owner][spender] = amount;
-        //emit Approval(owner, spender, amount);
+    function decreaseAllowance(address spender, uint256 minusAmount) external returns (bool) {
+        require(spender != address(0), "ERC20: approve to the zero address");
+        allowed[msg.sender][spender] -= minusAmount;
+        return true;
     }
 }
